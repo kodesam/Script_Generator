@@ -249,8 +249,8 @@ def chatbot(input):
             break
 
     if distractors_index != -1:
-        # Extract the afleiders into the distractors list
-        distractors = [line.strip() for line in lines[distractors_index + 1:] if line.strip()]
+       # Extract the afleiders into the distractors list and remove any trailing periods
+        distractors = [line.rstrip('.').strip for line in lines[distractors_index + 1:] if line.strip()]
     else:
         # Handle the case where "Afleiders:" is not found
         distractors = []

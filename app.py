@@ -3,169 +3,133 @@ import random
 import gradio as gr
 import os
 
-
 openai.api_key = os.environ["OpenAPI_Key"]
 
-manual = r"""Deze tool werkt met 2 soorten input:
-
-1.   Een leerdoel, zoals:
-
-Het rechterventrikel wordt van bloed voorzien door de rechter coronairarterie (RCA).
-
-2.    De complete HTML-code van een opgave in de MES Editor, zoals:
-
-Exercise body:
-
-<mc:exercise xmlns:mc="http://www.expertcollege.com/mes/multiple-choice/exercise"><mc:question><![CDATA[Theorie:<br />Het rechterventrikel wordt van bloed voorzien door de rechter coronairarterie (RCA). Direct na het ontspringen uit de sinus aortae geeft de RCA twee takken af.<br /><br />Stelling:<br />Dit zijn onder andere de .....]]></mc:question><mc:choices><mc:choice id="1"><![CDATA[Ramus descendens posterior]]></mc:choice><mc:choice id="2"><![CDATA[Conus arterie]]></mc:choice><mc:choice id="3"><![CDATA[Beide bovenstaande]]></mc:choice><mc:choice id="4"><![CDATA[Geen van bovenstaande]]></mc:choice></mc:choices></mc:exercise>
-Exercise key:
-
-<mc:key xmlns:mc="http://www.expertcollege.com/mes/multiple-choice/key"><mc:correctanswer id="2"/><mc:defaultexplanation><mc:text><![CDATA[Dit zijn de conus arterie, die het uitstroomkanaal van het rechterventrikel (de conus van de arteria pulmonalis) van bloed voorziet en een tweede tak, die de sinusknoop van bloed voorziet.]]></mc:text></mc:defaultexplanation></mc:key>"""
-
-# Define the messages for stepOne
-UserPrompt1 = r"""Exercise body:
-
-<mc:exercise xmlns:mc="http://www.expertcollege.com/mes/multiple-choice/exercise"><mc:question><![CDATA[Theorie:<br />Bij een tekort aan trombocyten (≤150×10<sup>9</sup>/L) spreek je over trombocytopenie.<br /><br />Stelling:<br />Een trombocytopenie ontstaat door .....]]></mc:question><mc:choices><mc:choice id="2"><![CDATA[Een verhoogde afbraak]]></mc:choice><mc:choice id="3"><![CDATA[Een inadequate productie]]></mc:choice><mc:choice id="4"><![CDATA[Beide bovenstaande]]></mc:choice><mc:choice id="5"><![CDATA[Geen van bovenstaande]]></mc:choice></mc:choices></mc:exercise>
-Exercise key:
-
-<mc:key xmlns:mc="http://www.expertcollege.com/mes/multiple-choice/key"><mc:correctanswer id="4"/><mc:defaultexplanation><mc:text><![CDATA[]]></mc:text></mc:defaultexplanation></mc:key>
+manual = r"""Input your variables in the fields on the left. The last one (Extra input...) is optional, you can use it to steer the prompt into a certain direction by adding more requirements.
 """
-AssistantPrompt1 = r"""Trombocytopenie, een tekort aan trombocyten, ontstaat door: '''zowel een verhoogde afbraak als een inadequate productie'''."""
-UserPrompt2 = r"""Exercise body:
 
-<mc:exercise xmlns:mc="http://www.expertcollege.com/mes/multiple-choice/exercise"><mc:question><![CDATA[Stelling:<br />Het buitenste vlies van het pericard wordt het epicard genoemd.]]></mc:question><mc:choices><mc:choice id="1"><![CDATA[Deze stelling is correct]]></mc:choice><mc:choice id="2"><![CDATA[Deze stelling is niet correct]]></mc:choice></mc:choices></mc:exercise>
-Exercise key:
+# Define the messages for step_1
+SystemPrompt_10 = r""""You are a script writer and prompt engineer creating engaging YouTube tutorial scripts on how to use ChatGPT for various tasks in a corporate environment. 
 
-<mc:key xmlns:mc="http://www.expertcollege.com/mes/multiple-choice/key"><mc:correctanswer id="2"/><mc:defaultexplanation><mc:text><![CDATA[Het pericard (hartzakje) bestaat uit twee vliezen, namelijk het binnenste vlies (viscerale pericard, ook wel het epicard) en het buitenste vlies (pariëtale pericard).]]></mc:text></mc:defaultexplanation></mc:key>
-"""
-AssistantPrompt2 = "Het buitenste vlies van het pericard wordt '''het pariëtale pericard''' genoemd."
-UserPrompt3 = r"""Exercise body:
+Make sure to include what sort of information the user needs to type into the prompt. 
 
-<mc:exercise xmlns:mc="http://www.expertcollege.com/mes/multiple-choice/exercise"><mc:question><![CDATA[Theorie:<br />Acute myocardiale ischemie kan optreden bij gebruik van amfetaminen, ecstasy of cocaïne.<br /><br />Vraag:<br />Waardoor treed in dit geval hypotensie op?]]></mc:question><mc:choices><mc:choice id="1"><![CDATA[Door een verhoogde productie van rode bloedcellen]]></mc:choice><mc:choice id="2"><![CDATA[Door de stimulatie van de afgifte van insuline]]></mc:choice><mc:choice id="3"><![CDATA[Beide bovenstaande]]></mc:choice><mc:choice id="4"><![CDATA[Geen van bovenstaande]]></mc:choice></mc:choices></mc:exercise>
-Exercise key:
+When creating the script, please follow this structure: 
+- Hook
+- Title
+- Introduction
+- Learning Objectives Summary
+- Learning Objective 1
+- Learning Objective 2
+- Conclusion
 
-<mc:key xmlns:mc="http://www.expertcollege.com/mes/multiple-choice/key"><mc:correctanswer id="4"/><mc:defaultexplanation><mc:text><![CDATA[Extra info:<br />Hypotensie treedt in dit geval op door acute myocardiale depressie als gevolg van ischemie en een direct toxisch effect van het middel.]]></mc:text></mc:defaultexplanation></mc:key>
-"""
-AssistantPrompt3 = "In het geval van acute myocardiale ischemie door gebruik van amfetaminen, ecstasy of cocaïne, treedt hypotensie op door: '''acute myocardiale depressie als gevolg van ischemie en een direct toxisch effect van het middel'''."
+Feel free to be creative."""
+UserPrompt_10 = r""""Create a script for teaching an employee: How to create a Job Ad with ChatGPT.
+Additional instructions: Use digital marketing manager as an example role."""
+AssistantPrompt_10 = r""""*HOOK*
+If you want your job ads to be found by the right candidates, you have to incorporate the right SEO-friendly keywords.
 
+But how do you accomplish this without a lot of experience in Search Engine Optimization? 
 
-# Define the messages for stepTwo
-UserPrompt21 = "Kennisonderdeel: '''De arteria pulmonalis''' komt rechtstreeks uit het rechterventrikel."
-AssistantPrompt21 = "Vraag: Welke slagader komt rechtstreeks uit het rechterventrikel?\nJuiste antwoord: De arteria pulmonalis"
-UserPrompt22 = "Kennisonderdeel: Geografische kenmerken in een klantprofiel geven informatie over '''de woonplaats van een klant''', zoals het land, de regio of de stad."
-AssistantPrompt22 = "Vraag: Waar geven geografische kenmerken in een klantprofiel informatie over?\nJuiste antwoord: De woonplaats van de klant"
+Well, with ChatGPT. 
 
-# Define the messages for stepThree
-SystemPrompt31 = r"""Je bent een breedgeschoolde professor met veel expertise over de onderwerpen van toetsvragen.
+*TITLE*
+Create a Job Ad with ChatGPT
 
-Genereer uitspraken die niet waar zijn, maar geloofwaardige misvattingen over de informatie in de gepresenteerde vraag.
+*INTRO*
+In this digital age, getting your job ad to stand out amongst the rest is crucial to finding the best candidates.
 
-Zorg ervoor dat alle misvattingen daadwerkelijk volledig onwaar zijn in alle gevallen en omstandigheden, maar op een subtiele manier. Ze moeten geloofwaardige variaties op het juiste antwoord presenteren. 
-Formuleer je misvattingen overwegend positief, dus vermijd het gebruik van 'geen' en 'niet' en vermijd absoluut/extreem taalgebruik. Zorg dat het taalniveau overeenkomt met het juiste antwoord. 
-Geef geen toelichting bij de misvattingen.
+Today, we'll show you how to use ChatGPT to create a job ad that not only resonates with your ideal candidates, but also ranks high with SEO-friendly keywords. 
 
-Let op: zorg dat je misvattingen:
-    - zich strikt richten op de informatie in de vraag, niet op het overkoepelende onderwerp in zijn geheel
-    - geloofwaardig zijn voor iemand met basiskennis over het studieonderwerp"""
-UserPrompt31 = r"""Studieonderwerp: Het zenuwstelsel
-Vraag: Wat maakt het zenuwstelsel onder andere mogelijk? 
-Juiste antwoord: Eten, ademen, lopen, en praten"""
-AssistantPrompt31 = r"""Misvattingen:
-1. Het zenuwstelsel is direct verantwoordelijk voor het opnemen van zuurstof uit de ingeademde lucht.
-2. Door het zenuwstelsel kunnen we energie maken uit zonlicht.
-3. Het zenuwstelsel maakt het mogelijk om vitamine B op te nemen uit zonlicht.
-4. Het zenuwstelsel maakt het mogelijk om het zuurstofniveau in het bloed te meten.
-5. Het regelen van de zuurstofbinding aan hemoglobine in de longen wordt mogelijk gemaakt door het zenuwstelsel.
-6. Het zenuwstelsel maakt het mogelijk om het suikergehalte in het bloed te regelen."""
-UserPrompt32 = r"""Studieonderwerp: Het zenuwstelsel
-Vraag: Wat zijn de twee voornaamste zenuwstelsels die we in het lichaam onderscheiden?
-Juiste antwoord: Het centraal en perifeer zenuwstelsel"""
-AssistantPrompt32 = r"""Misvattingen:
-1. In ons lichaam wordt het zenuwstelsel met name onderverdeeld in het autonome en het viscerale zenuwstelsel.
-2. We verdelen het zenuwstelsel in ons lichaam in de eerste plaats onder in het cerebrale en het spinale zenuwstelsel.
-3. In het menselijk lichaam worden voornamelijk twee zenuwstelsels onderscheiden: het animale zenuwstelsel en het somatische zenuwstelsel.
-4. De twee hoofdzenuwstelsels in ons lichaam zijn het motorisch en endocrien systeem.
-5. Het zenuwstelsel in het lichaam wordt met name onderverdeeld in het interne en externe zenuwstelsel.
-6. Het zenuwstelsel in het menselijk lichaam wordt meestal onderverdeeld in het oppervlakkige en diepe zenuwstelsel.
-7. Het zenuwstelsel wordt vaak onderverdeeld in het methische en het hermethische zenuwstelsel.
-8. De hoofdindeling van het zenuwstelsel is het voorste en het achterste zenuwstelsel."""
-UserPrompt33 = r"""Studieonderwerp: Klantprofielen en marktsegmentatie
-Vraag: Bij het opstellen van een klantprofiel, welke soort informatie nemen we daar voornamelijk in mee?
-Juiste antwoord: Leeftijd, geslacht, en woonplaats"""
-AssistantPrompt33 = r"""Misvattingen:
-1. In een klantprofiel worden vooral aankoop- en betalingsgeschiedenis van de klant in detail opgenomen.
-2. De afkomst van de klant is onmisbaar bij het opstellen van een klantprofiel.
-3. Wanneer we een klantprofiel samenstellen, leggen we de meeste aandacht op hun onderwijsniveau.
-4. Een klantprofiel wordt vooral opgesteld op basis van de politieke voorkeuren van de klant.
-5. Het persoonlijke inkomen van de klant is één van de belangrijkste factoren bij het vormen van een klantprofiel.
-6. De religieuze overtuigingen van een klant zijn het belangrijkst bij het maken van een klantprofiel.
-7. Wanneer we een klantprofiel opstellen, geven we vooral voorrang aan de gezondheidsstatus van de klant.
-8. Bij het opstellen van een klantprofiel is de voornaamste informatie de carrière/beroep van de klant.
-9. De militaire status is onmisbaar bij het opstellen van een klantprofiel."""
+*LEARNING OBJECTIVES SUMMARY*
+You will learn how to:
+
+- Create an ideal job description
+
+- Extract SEO Friendly Keywords 
+
+- Craft a Job Ad 
+
+Let's dive right in!
+
+*LEARNING OBJECTIVE 1*
+You can't create the perfect job ad without first creating the job description. 
+
+Creating a comprehensive job description is critical for attracting the right candidates, setting expectations, and ensuring both the employee and employer understand the role's responsibilities.   
+
+To create a basic job description, you would at least need to define the job title, the overview of the role, and the role's key responsibilities.
+
+ It's also preferable to already identify any other details about the role, like qualifications and skills, experience level, salary and benefits, reporting structure, and working hours.    
+
+Let's say you've been tasked to recruit a 'Digital Marketing Manager'.
+
+Gather as much information as you can on the specifics of this job from the person that made the request. 
+
+For this tutorial, we'll be using the following sample information.
 
 
+The job title is "Digital marketing manager."
 
-# Define the messages for stepFour
-SystemPrompt41 = r"""Je bent een breed-geschoolde professor. Op basis van een vraag, antwoord en een lijstje met misvattingen genereer je de meest geloofwaardige, doch incorrecte, afleiders voor een meerkeuzevraag.
-De afleiders moeten eenzelfde lengte, grammaticale structuur en taalniveau hebben als het juiste antwoord.
-De afleiders moeten geloofwaardig klinken voor iemand die weinig over het onderwerp weet, maar daadwerkelijk volledig onjuist zijn. Ze mogen de vraag op geen enkele manier correct beantwoorden. Zorg dat zij dus het foutieve aspect van de misvatting waarop ze zijn gebaseerd behouden, op een subtiele manier."""
-UserPrompt41 = r"""Je bent een expert op het gebied van 'Klantprofielen en marktsegmentatie'. 
-Vraag: Welke soort informatie nemen we voornamelijk mee in het opstellen van een klantprofiel? 
-Juiste antwoord: Leeftijd, geslacht, en woonplaats 
+The overview of the role is "The digital marketing manager is responsible for managing the overall digital marketing strategy of xpedite.ai. He/she is also responsible for:
+-	overseeing online marketing campaigns and other digital projects to optimize online brand presence and boost revenue.
+-	manageing a team of 3 digital marketers." 
 
-Misvattingen: 
-1. In een klantprofiel worden vooral aankoop- en betalingsgeschiedenis van de klant in detail opgenomen.
-2. De afkomst van de klant is onmisbaar bij het opstellen van een klantprofiel.
-3. Wanneer we een klantprofiel samenstellen, leggen we de meeste aandacht op hun onderwijsniveau.
-4. Een klantprofiel wordt vooral opgesteld op basis van de politieke voorkeuren van de klant.
-5. Het inkomen van de klant is één van de belangrijkste factoren bij het vormen van een klantprofiel.
-6. De religieuze overtuigingen van een klant zijn het belangrijkst bij het maken van een klantprofiel.
-7. Wanneer we een klantprofiel opstellen, geven we vooral voorrang aan de gezondheidsstatus van de klant.
-8. Bij het opstellen van een klantprofiel is de voornaamste informatie de carrière of het beroep van de klant.
-9. De militaire status is onmisbaar bij het opstellen van een klantprofiel. """
-AssistantPrompt41 = r"""Vraag: 
-Welke soort informatie nemen we voornamelijk mee in het opstellen van een klantprofiel?
+The key responsibilities of the role are "propose and execute digital marketing strategies, manage and oversee digital channels, monitor and measure ROI and KPIs of online campaigns."
 
-Juiste antwoord:
-Leeftijd, geslacht, en woonplaats
+Now, we're ready to write our prompt. 
 
-Afleiders: 
-Aankoop- en betaalgeschiedenis
-Opleidingsniveau en politieke voorkeuren
-Afkomst, religie, en gezondheidstatus
-Informatie over carrière en beroep
+Type: "You are a recruiter. Create a job description for a digital marketing manager.
 
 
-"""
-UserPrompt42 = r"""Je bent een expert op het gebied van het zenuwstelsel. 
-Vraag: Tot welk zenuwstelsel behoort het ruggenmerg?
-Juiste antwoord: Het centrale zenuwstelsel
+Here are some additional details to consider when writing the job description:"
 
-Misvattingen:
-1. Het ruggenmerg behoort tot het perifere zenuwstelsel.
-2. Het motorische zenuwstelsel is waar het ruggenmerg bijhoort.
-3. Het ruggenmerg behoort tot het parasympathisch zenuwstelsel.
-4. Het ruggenmerg behoort tot het quadratische zenuwstelsel.
-5. Het ruggenmerg behoort tot het craniale zenuwstelsel.
-"""
-AssistantPrompt42 = r"""Vraag: 
-Tot welk zenuwstelsel behoort het ruggenmerg? 
+Then, paste the details you gathered previously.
 
-Juiste antwoord: 
-Het centrale zenuwstelsel
+Then press the send button.
 
-Afleiders: 
-Het perifere zenuwstelsel 
-Het motorische zenuwstelsel
-Het parasympathisch zenuwstelsel
-Het quadratische zenuwstelsel"""
+ChatGPT wrote some basic details, the overview of the role, and key responsibilities of the role. 
 
-## Define the messages for stepFive
-#UserPrompt41 =  r""""""
-#AssistantPrompt41 = r""""""
-#UserPrompt42 = r""""""
-#AssistantPrompt42 = r""""""
-#UserPrompt43 = r""""""
-#AssistantPrompt43 = r""""""
+It also included [basic and preferred qualifications], [what's in it for the applicant], and [more instructions].
+
+
+Make sure to review and revise this job description so it effectively communicates your expectations. 
+
+*LEARNING OBJECTIVE 2*
+With this description, we can proceed to extract keywords which potential candidates might use when searching for this job.
+
+Keywords are important because they make your job ad discoverable. The best keywords should resonate with the job seekers' search behavior.
+
+Let's get keywords from ChatGPT. 
+
+Type "Provide keywords related to the role of Digital Marketing Manager based on the description you've provided me."
+
+Then, press the send message button. 
+
+ChatGPT came up with a couple of keywords that we can use when posting our final job ad. 
+
+We can also incorporate these keywords into the job ad itself.
+
+With our description and keywords in hand, let's craft a job ad that integrates them both seamlessly.  
+
+Type:
+
+"Using the job description and the keywords you've provided, draft a job ad for a Digital Marketing Manager."
+
+ Then, press the send button.   
+
+Here's the response. 
+
+
+ChatGPT drafted a job ad that contains specific details about the job description and incorporates keywords so that it's easier to find on the internet. 
+
+Make sure to review and revise the ad and verify that all information is accurate before posting it online. 
+
+*CONCLUSION*
+That's it!
+
+By leveraging the power of ChatGPT-4, HR professionals can create job advertisements that stand out and attract top talent.
+
+Remember, in the digital age of recruitment, your job ad is your first impression. So make it count!"""
+
 
 # Function to make API call
 def api_call(messages, temperature=0.9, model="gpt-4"):
@@ -176,113 +140,36 @@ def api_call(messages, temperature=0.9, model="gpt-4"):
     ).choices[0].message.content
 
 # Function to be called by Gradio interface
-def chatbot(input):
-    # Check if input is empty
-    if not input:
+def process_inputs(EPA_title, Department, Extra_input):
+    # Check if EPA_title and/or Department are empty
+    if not EPA_title and not Department:
         return manual
-    # Check if input text contains '[CDATA'
-    if "[CDATA" in input:
+    else:
     # Step 1: User input and first API call ~5secs
         stepOne = [
-            {"role": "system", "content": "You distill a takeaway out of an exercise's question and answer. Mark the answer part in triple quotes '''. Don't do anything else."},
-            {"role": "user", "content": UserPrompt1},
-            {"role": "assistant", "content": AssistantPrompt1},
-            {"role": "user", "content": UserPrompt2},
-            {"role": "assistant", "content": AssistantPrompt2},
-            {"role": "user", "content": UserPrompt3},
-            {"role": "assistant", "content": AssistantPrompt3},
-            {"role": "user", "content": input}
+            {"role": "system", "content": SystemPrompt_10},
+            {"role": "user", "content": UserPrompt_10},
+            {"role": "assistant", "content": AssistantPrompt_10},
+            {"role": "user", "content": f"""Create a script for teaching an employee: {EPA_title}
+The target audience is: a professional in a {Department} team. 
+Additional instructions: {Extra_input}"""}
         ]
-        Takeaway = api_call(stepOne, 0.4)
-        strippedTakeaway = Takeaway.replace("'''", '')
-    else:
-# Skip stepOne and set 'Takeaway' to input
-        strippedTakeaway = input.replace("'''", '')
-        Takeaway = input
-    # Step 2: second API call with first call's output as input ~2secs
-    stepTwo = [
-        {"role": "system", "content": "Je bent onderwijskundige. Genereer 1 vraag waarmee je de kennis van de student toetst over een specifiek stukje informatie (kennisonderdeel)."},
-        {"role": "user", "content": UserPrompt21},
-        {"role": "assistant", "content": AssistantPrompt21},
-        {"role": "user", "content": UserPrompt22},
-        {"role": "assistant", "content": AssistantPrompt22},
-        {"role": "user", "content": "Kennisonderdeel: " + Takeaway}
-    ]
-    QandA = api_call(stepTwo, 0.5, "gpt-3.5-turbo")
-
-    # Split the QandA string into question and answer parts
-    lines = QandA.split('\n')
-    # Isolate just the question and answer 
-    question = lines[0].split('Vraag: ')[1].strip()
-    answer = lines[1].split('Juiste antwoord: ')[1].strip().rstrip(".")
-
-    # Step 3: next API call with previous call's output as input ~21secs
-    stepThree = [
-        {"role": "system", "content": SystemPrompt31},
-        {"role": "user", "content": UserPrompt31},
-        {"role": "assistant", "content": AssistantPrompt31},
-        {"role": "user", "content": UserPrompt32},
-        {"role": "assistant", "content": AssistantPrompt32},
-        {"role": "user", "content": QandA}
-    ]
-    misvattingen = api_call(stepThree)
     
-#Step 4: ALL elements next API call with previous call's output as input ~23secs
-    stepFour = [
-        {"role": "system", "content": SystemPrompt41},
-        {"role": "user", "content": UserPrompt41},
-        {"role": "assistant", "content": AssistantPrompt41},
-        {"role": "user", "content": UserPrompt42},
-        {"role": "assistant", "content": AssistantPrompt42},
-        {"role": "user", "content": "Je bent medisch expert.\n" + QandA + "\n\n" + misvattingen}
-    ]
-    BOTA_mc_elements = api_call(stepFour, 0.7)
+    Script_1 = api_call(stepOne, 0.7)
+    return Script_1
 
-    # Split the BOTA_mc_elements string by lines
-    lines = BOTA_mc_elements.split('\n')
 
-    # Find the index where "Afleiders:" appears
-    distractors_index = -1  # Initialize to -1 as a sentinel value
-    for i, line in enumerate(lines):
-        if line.strip() == "Afleiders:":
-            distractors_index = i
-            break
 
-    if distractors_index != -1:
-       # Extract the afleiders into the distractors list and remove any trailing periods
-        distractors = [line.rstrip('.').strip() for line in lines[distractors_index + 1:] if line.strip()]
-    else:
-        # Handle the case where "Afleiders:" is not found
-        distractors = []
-        distractors.append("Geen afleiders gevonden. Herlaad de pagina, klik zonder input op 'Submit' voor instructies, en probeer opnieuw. Gaat het een tweede keer mis? Stuur Ben ten Berge een berichtje met je input.")
-        distractors.append("Geen afleiders gevonden. Herlaad de pagina, klik zonder input op 'Submit' voor instructies, en probeer opnieuw. Gaat het een tweede keer mis? Stuur Ben ten Berge een berichtje met je input.")
-
-    # Generate the two versions of 'Beide bovenstaande' type
-    exercise_1 = f"Vraag:\n{question}\n\n{answer}   ✔\n{distractors[0]}\n{distractors[1]}\n{distractors[2]}\n\n\n\n---------------------\nBonus-afleider:\n{distractors[3]}\n\n---------------------\nOf maak er een 'Beide bovenstaande'-vraag van:\nBeide bovenstaande\nGeen van bovenstaande\n\nExtra info:\n{Takeaway}"
-    exercise_2 = f"Vraag:\n{question}\n\n{distractors[0]}\n{answer}   ✔\n{distractors[1]}\n{distractors[2]}\n\n\n\n---------------------\nBonus-afleider:\n{distractors[3]}\n\n---------------------\nOf maak er een 'Beide bovenstaande'-vraag van:\nBeide bovenstaande\nGeen van bovenstaande\n\nExtra info:\n{Takeaway}"
-    exercise_3 = f"Vraag:\n{question}\n\n{distractors[0]}\n{distractors[1]}\n{answer}   ✔\n{distractors[2]}\n\n\n\n---------------------\nBonus-afleider:\n{distractors[3]}\n\n---------------------\nOf maak er een 'Beide bovenstaande'-vraag van:\nBeide bovenstaande\nGeen van bovenstaande\n\nExtra info:\n{Takeaway}"
-    exercise_4 = f"Vraag:\n{question}\n\n{distractors[0]}\n{distractors[1]}\n{distractors[2]}\n{answer}   ✔\n\n\n\n---------------------\nBonus-afleider:\n{distractors[3]}\n\n---------------------\nOf maak er een 'Beide bovenstaande'-vraag van:\nBeide bovenstaande\nGeen van bovenstaande\n\nExtra info:\n{Takeaway}"
-    
-    # Define the probabilities
-    probabilities = [0.25, 0.25, 0.25, 0.25]  # 25% each (dit kan ongetwijfeld makkelijker en beter.. #quickfix)
-    # Randomly choose between OneTrue and NoneTrue based on the probabilities
-    random_version = random.choices([exercise_1, exercise_2, exercise_3, exercise_4], weights=probabilities, k=1)[0]
-
-    return random_version
-   
-
-inputs = gr.Textbox(lines=7, label="Input")
-outputs = gr.Textbox(label="Output")
-
-# Create the Gradio interface with HTML-formatted output
+# Create the Gradio interface 
 iface = gr.Interface(
-    fn=chatbot,
-    inputs=inputs,
-    outputs=outputs,
-    title="Leerdoel naar standaard MC-opgave [v1]",
-    description="Voer een leerdoel in en druk op 'Submit'.",
-    theme="compact",
-    port=7862
+    fn=process_inputs, 
+    inputs=[
+        gr.Textbox(lines=2, label="EPA title Here..."), 
+        gr.Textbox(lines=2, label="Department Here..."), 
+        gr.Textbox(lines=2, label="Extra input Here... (optional)")
+        ], 
+    outputs=gr.Textbox(label="Script", show_copy_button=True)
 )
 
 iface.launch(share=True)
+iface.launch()

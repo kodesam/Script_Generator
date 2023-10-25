@@ -1,6 +1,6 @@
 ---
-title: Normal MC
-emoji: 💻
+title: Script Generator
+emoji: 📝
 colorFrom: green
 colorTo: pink
 sdk: gradio

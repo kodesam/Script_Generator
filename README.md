@@ -1,7 +1,7 @@
 ---
 title: Script Generator
 emoji: 📝
-colorFrom: green
+colorFrom: blue
 colorTo: pink
 sdk: gradio
 sdk_version: 3.46.0

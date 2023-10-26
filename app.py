@@ -144,8 +144,16 @@ def process_inputs(EPA_title, Department, Extra_input):
     # Check if EPA_title and/or Department are empty
     if not EPA_title and not Department:
         return manual
+    if not Extra_input:
+        stepOne = [
+            {"role": "system", "content": SystemPrompt_10},
+            {"role": "user", "content": UserPrompt_10},
+            {"role": "assistant", "content": AssistantPrompt_10},
+            {"role": "user", "content": f"""Create a script for teaching an employee: {EPA_title}
+The target audience is: a professional in a {Department} team."""}
+        ]
     else:
-    # Step 1: User input and first API call ~5secs
+        # Step 1: User input and first API call ~5secs
         stepOne = [
             {"role": "system", "content": SystemPrompt_10},
             {"role": "user", "content": UserPrompt_10},

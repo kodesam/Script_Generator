@@ -173,8 +173,8 @@ iface = gr.Interface(
     fn=process_inputs, 
     inputs=[
         gr.Textbox(lines=2, label='EPA title Here... (use the phrasing: "How to do X with ChatGPT")'), 
-        gr.Textbox(lines=2, label='Department Here... (eg: Product Management)', 
-        gr.Textbox(lines=2, label='Extra input Here... (optional, put any extra requirements or relevant context)'
+        gr.Textbox(lines=2, label='Department Here... (eg: Product Management)'), 
+        gr.Textbox(lines=2, label='Extra input Here... (optional, put any extra requirements or relevant context)')
         ], 
     outputs=gr.Textbox(label="Script", show_copy_button=True)
 )

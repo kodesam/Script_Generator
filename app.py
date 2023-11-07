@@ -132,7 +132,7 @@ Remember, in the digital age of recruitment, your job ad is your first impressio
 
 
 # Function to make API call
-def api_call(messages, temperature=0.9, model="gpt-4"):
+def api_call(messages, temperature=0.9, model="gpt-4-1106-preview"):
     return openai.ChatCompletion.create( 
         messages=messages,
         temperature=temperature,
